@@ -21,11 +21,11 @@
 
 ## Día 1 — Lunes 2/11 (presencial) · Base del proyecto
 - [ ] **T00** Registrar el producto en developer.riotgames.com para pedir una **Personal API Key** (no vence cada 24 h). Puede tardar en aprobarse, así que conviene hacerlo HOY. Mientras tanto se usa la dev key.
-- [ ] **T01** Crear el repo en GitHub y el proyecto Next.js: `npx create-next-app@latest` → JavaScript, ESLint, Tailwind, `src/`, App Router, alias `@/*`. Copiar `CLAUDE.md`, `docs/`, `supabase/` y `.env.example`. Commit: `chore: inicializa proyecto Next.js y documentación de planificación`
-- [ ] **T02** Crear el proyecto en Supabase (región São Paulo), correr `supabase/schema.sql` en el SQL Editor y, en Auth, habilitar email+password con la confirmación de email **desactivada** (para no trabar la demo).
-- [ ] **T03** Clientes de Supabase (`src/lib/supabase/client.js`, `server.js`, `admin.js`) + `src/middleware.js` que refresca la sesión y protege rutas.
-- [ ] **T04** Deploy en Vercel con las variables de entorno. Una página "hola" online = deploy funcionando.
-- [ ] **T05** Login / registro / logout + `/onboarding` (elegir `nombre_usuario` y "¿venís a buscar equipo o jugadores?"). Si el usuario no tiene fila en `perfiles`, el middleware lo manda a `/onboarding`.
+- [x] **T01** Crear el repo en GitHub y el proyecto Next.js: `npx create-next-app@latest` → JavaScript, ESLint, Tailwind, `src/`, App Router, alias `@/*`. Copiar `CLAUDE.md`, `docs/`, `supabase/` y `.env.example`. Commit: `chore: inicializa proyecto Next.js y documentación de planificación`
+- [x] **T02** Crear el proyecto en Supabase (región São Paulo), correr `supabase/schema.sql` en el SQL Editor y, en Auth, habilitar email+password con la confirmación de email **desactivada** (para no trabar la demo).
+- [x] **T03** Clientes de Supabase (`src/lib/supabase/client.js`, `server.js`, `admin.js`) + `src/middleware.js` que refresca la sesión y protege rutas.
+- [x] **T04** Deploy en Vercel con las variables de entorno. Una página "hola" online = deploy funcionando.
+- [x] **T05** Login / registro / logout + `/onboarding` (elegir `nombre_usuario` y "¿venís a buscar equipo o jugadores?"). Si el usuario no tiene fila en `perfiles`, el middleware lo manda a `/onboarding`.
 - [ ] **T06** Layout base: navbar (Jugadores · Equipos · Torneos · Mi perfil), tokens de diseño provisionales en `globals.css` + `tailwind.config`, y componentes mínimos en `src/components/ui/` (Button, Card, Badge, Input, Select, Spinner, EmptyState, ErrorState).
 
 ## Día 2 — Martes 3/11 (presencial) · Riot API
