@@ -57,9 +57,15 @@ async function esperarTurno() {
   }
 }
 
+// Recorta espacios, saltos de línea y comillas que se cuelan al pegar la key en Vercel.
+const leerKey = () => (process.env.RIOT_API_KEY ?? "").trim().replace(/^["']|["']$/g, "");
+
 async function unIntento(url) {
-  const key = process.env.RIOT_API_KEY;
-  if (!key) throw new RiotError("KEY_INVALID", 401, "Falta RIOT_API_KEY");
+  const key = leerKey();
+  if (!key) {
+    console.error("[riot] Falta RIOT_API_KEY en este entorno (¿se redeployó después de cargarla?)");
+    throw new RiotError("KEY_INVALID", 401, "Falta RIOT_API_KEY");
+  }
 
   await esperarTurno();
   try {
@@ -89,7 +95,14 @@ export async function riotFetch(url) {
 
   const { status } = res;
   if (status === 429) throw new RiotError("RATE_LIMITED", status);
-  if (status === 401 || status === 403) throw new RiotError("KEY_INVALID", status);
+  if (status === 401 || status === 403) {
+    // Diagnóstico para los logs de Vercel (sin imprimir la key): una key válida mide 42 y empieza con RGAPI-.
+    const key = leerKey();
+    console.error(
+      `[riot] ${status} en ${new URL(url).pathname} · key largo=${key.length} prefijo_ok=${key.startsWith("RGAPI-")}`
+    );
+    throw new RiotError("KEY_INVALID", status);
+  }
   // 400 llega con Riot IDs mal formados: para el usuario es lo mismo que "no existe".
   if (status === 404 || status === 400) throw new RiotError("NOT_FOUND", status);
   throw new RiotError("UNAVAILABLE", status);

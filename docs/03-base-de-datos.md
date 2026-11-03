@@ -45,8 +45,9 @@ erDiagram
 
 ## `rango_valor`
 Se calcula en el sync con `src/lib/rangos.js`:
-`indexTier * 4 + (4 - divisionNumero)` con `IRON=0 … DIAMOND=6`. MASTER, GRANDMASTER y CHALLENGER no tienen división (`MASTER=28`, `GRANDMASTER=29`, `CHALLENGER=30`). Unranked = `null`.
-Ej.: "Esmeralda+" → `rango_valor >= 5*4 = 20`.
+`indexTier * 10000 + indexDivision * 1000 + LP`, con `IRON=0 … CHALLENGER=9` e `IV=0 … I=3`. MASTER, GRANDMASTER y CHALLENGER no tienen división (solo suman LP). Unranked = `null`.
+El salto de 10000 por tier hace que un Maestro con muchos LP nunca supere el mínimo de Gran Maestro.
+Ej.: "Esmeralda+" → `rango_valor >= minimoTier('EMERALD')` = `5 * 10000 = 50000`.
 
 ## Torneos (P5, T23) — propuesta
 ```

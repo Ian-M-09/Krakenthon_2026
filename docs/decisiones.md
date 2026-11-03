@@ -24,3 +24,9 @@
 - 2026-11-03 — Si una partida ya está en caché porque la trajo otro jugador, se extrae nuestra fila desde `partidas.datos` — Cero requests extra cuando dos jugadores de la plataforma jugaron juntos.
 - 2026-11-03 — El sync también llama a summoner-v4 (1 request más) — Mantiene actualizados el ícono y el nivel que muestra el perfil.
 - 2026-11-03 — Verificar dispara el primer sync con `force`; si el sync falla, la verificación igual queda hecha — Son cosas independientes y la verificación es lo que importa.
+- 2026-11-03 — `await connection()` en `createClient()` del servidor — Con Partial Prefetching, Next pre-renderiza lo que lee cookies y prohíbe `Date.now()`, que Supabase usa para validar el token. Todo lo que usa la sesión pasa a renderizarse en el request (igual es por usuario).
+- 2026-11-03 — Las stats se recalculan desde la BD (`partidas_jugador`) al final de cada sync, y también en cooldown/stale si la cuenta todavía no tiene resumen — No gastan requests de Riot y el perfil nunca queda vacío si hay partidas en caché.
+- 2026-11-03 — Benchmarks estimados en `supabase/seed-benchmarks.sql` (ALL + JUNGLE + UTILITY por tier, `fuente='estimado'`) — Jungla y support tienen CS/visión muy distintos; la UI aclara que son referencias estimadas y no promedios oficiales.
+- 2026-11-03 — CS/min y visión/min sobre minutos totales; KP como promedio por partida — Ponderar por duración evita que una partida corta distorsione el promedio.
+- 2026-11-03 — Horarios: `dia` 0 = lunes; conversión con `Intl` (sin librerías) usando el offset del momento — Respeta el horario de verano y se hace en el navegador porque es el único lugar donde se conoce la zona del visitante.
+- 2026-11-03 — La edición del perfil (T13) solo escribe `perfiles_jugador` y `contactos_jugador`, con validación por whitelist en la server action — Las stats y la cuenta de Riot no tienen policies de escritura: aunque alguien manipule el form, el RLS lo rechaza.

@@ -20,7 +20,7 @@
 ---
 
 ## Día 1 — Lunes 2/11 (presencial) · Base del proyecto
-- [ ] **T00** Registrar el producto en developer.riotgames.com para pedir una **Personal API Key** (no vence cada 24 h). Puede tardar en aprobarse, así que conviene hacerlo HOY. Mientras tanto se usa la dev key.
+- [x] **T00** Registrar el producto en developer.riotgames.com para pedir una **Personal API Key** (no vence cada 24 h). Puede tardar en aprobarse, así que conviene hacerlo HOY. Mientras tanto se usa la dev key.
 - [x] **T01** Crear el repo en GitHub y el proyecto Next.js: `npx create-next-app@latest` → JavaScript, ESLint, Tailwind, `src/`, App Router, alias `@/*`. Copiar `CLAUDE.md`, `docs/`, `supabase/` y `.env.example`. Commit: `chore: inicializa proyecto Next.js y documentación de planificación`
 - [x] **T02** Crear el proyecto en Supabase (región São Paulo), correr `supabase/schema.sql` en el SQL Editor y, en Auth, habilitar email+password con la confirmación de email **desactivada** (para no trabar la demo).
 - [x] **T03** Clientes de Supabase (`src/lib/supabase/client.js`, `server.js`, `admin.js`) + `src/middleware.js` que refresca la sesión y protege rutas.
@@ -32,12 +32,12 @@
 - [x] **T07** `src/lib/riot/client.js`: fetch con `X-Riot-Token`, rate limit en memoria, reintento ante 429 respetando `Retry-After`, timeout y errores tipados (`NOT_FOUND`, `RATE_LIMITED`, `KEY_INVALID`, `UNAVAILABLE`). + `regions.js` y `endpoints.js`.
 - [x] **T08** Vincular cuenta (`/perfil/vincular`): formulario con Riot ID (`Nombre#TAG`) y región → el servidor resuelve el `puuid` → guarda en `cuentas_riot` con `verificada=false` y le asigna un ícono de verificación al azar.
 - [x] **T09** Verificar la cuenta: el jugador se pone ese ícono en el cliente de LoL → botón "Verificar" → el servidor compara `profileIconId` → `verificada=true` (ver `04-riot-api.md`). También se puede "Verificar después" (el perfil muestra el badge "no verificada").
-- [x] **T10** `src/lib/riot/sync.js`: sincroniza rango, IDs de partidas y **solo** las partidas nuevas → `partidas` + `partidas_jugador`. Cooldown de 10 min por cuenta. Endpoint `POST /api/riot/sincronizar`. *(computeStats → `estadisticas_jugador` queda para la T11: TODO en sync.js)*
+- [x] **T10** `src/lib/riot/sync.js`: sincroniza rango, IDs de partidas y **solo** las partidas nuevas → `partidas` + `partidas_jugador`. Cooldown de 10 min por cuenta. Endpoint `POST /api/riot/sincronizar`.
 
 ## Día 3 — Miércoles 4/11 (presencial, cierre) · Perfil
-- [ ] **T11** `src/lib/stats.js` (funciones puras): winrate, por campeón y por rol, KDA, CS/min, visión/min, kill participation, forma reciente (últimas 10). Guarda el resumen en `estadisticas_jugador`. Seed de `benchmarks_rango` marcado como `fuente='estimado'`.
-- [ ] **T12** Perfil público `/jugadores/[nombre_usuario]`: header (ícono, Riot ID, rango, badge verificado, "actualizado hace X"), cards de stats, tabla por campeón, distribución por rol, forma reciente, comparación vs. su rango y datos declarados.
-- [ ] **T13** Editar datos declarados (`/perfil/editar`): país, idiomas, roles, horarios + zona horaria, bio, contacto + visibilidad. Los horarios se muestran **convertidos a la zona horaria del que mira** (`src/lib/horarios.js`).
+- [x] **T11** `src/lib/stats.js` (funciones puras): winrate, por campeón y por rol, KDA, CS/min, visión/min, kill participation, forma reciente (últimas 10). Guarda el resumen en `estadisticas_jugador`. Seed de `benchmarks_rango` marcado como `fuente='estimado'`.
+- [x] **T12** Perfil público `/jugadores/[nombre_usuario]`: header (ícono, Riot ID, rango, badge verificado, "actualizado hace X"), cards de stats, tabla por campeón, distribución por rol, forma reciente, comparación vs. su rango y datos declarados.
+- [x] **T13** Editar datos declarados (`/perfil/editar`): país, idiomas, roles, horarios + zona horaria, bio, contacto + visibilidad. Los horarios se muestran **convertidos a la zona horaria del que mira** (`src/lib/horarios.js`).
 - [ ] 🎯 **Hito día 3:** registro → vincular → verificar → ver perfil con stats reales, en producción.
 
 ## Día 4 — Jueves 5/11 (remoto) · IA: informe de scouting

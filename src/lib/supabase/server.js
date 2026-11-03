@@ -3,8 +3,13 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 export async function createClient() {
+  // Con Partial Prefetching, Next pre-renderiza lo que lee cookies (el "App Shell") y prohíbe
+  // valores que cambian como Date.now(), que Supabase usa para ver si el token venció.
+  // connection() hace que todo lo que usa la sesión se renderice en el momento del request.
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient(

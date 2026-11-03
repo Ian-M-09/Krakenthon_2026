@@ -5,6 +5,43 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { RiotError, MENSAJES_RIOT } from "./client";
 import { getSummonerByPuuid, getRankedSolo, getMatchIds, getMatch } from "./endpoints";
 import { rangoValor } from "@/lib/rangos";
+import { computeStats } from "@/lib/stats";
+
+// Recalcula el resumen desde lo guardado en la BD (sin llamar a Riot) y lo guarda.
+// Trae todas las filas del puuid y computeStats se queda con las 20 más recientes.
+export async function recalcularStats(db, cuentaId, puuid) {
+  const { data, error } = await db
+    .from("partidas_jugador")
+    .select(
+      "campeon, campeon_id, posicion, victoria, kills, deaths, assists, cs, vision, participacion_kills, partidas!inner(inicio, duracion_seg)"
+    )
+    .eq("puuid", puuid);
+  if (error) throw error;
+
+  const filas = data.map(({ partidas, ...f }) => ({ ...f, ...partidas }));
+  const resumen = computeStats(filas);
+  const { error: errS } = await db.from("estadisticas_jugador").upsert(
+    {
+      cuenta_id: cuentaId,
+      resumen,
+      partidas_n: resumen.partidas,
+      calculado_en: new Date().toISOString(),
+    },
+    { onConflict: "cuenta_id" }
+  );
+  if (errS) throw errS;
+  return resumen;
+}
+
+// Si la cuenta nunca tuvo stats calculadas, las calcula con lo que haya en caché.
+async function asegurarStats(db, cuenta) {
+  const { data } = await db
+    .from("estadisticas_jugador")
+    .select("cuenta_id")
+    .eq("cuenta_id", cuenta.id)
+    .maybeSingle();
+  if (!data) await recalcularStats(db, cuenta.id, cuenta.puuid);
+}
 
 export const COOLDOWN_MS = 10 * 60 * 1000;
 const PARTIDAS_A_TRAER = 20;
@@ -71,10 +108,12 @@ export async function syncAccount(cuentaId, { force = false } = {}) {
   });
 
   if (process.env.DEMO_MODE === "true") {
+    await asegurarStats(db, cuenta);
     return cacheado("stale", "Mostrando datos guardados (modo demo).");
   }
   const ultima = cuenta.sincronizado_en ? new Date(cuenta.sincronizado_en).getTime() : 0;
   if (!force && Date.now() - ultima < COOLDOWN_MS) {
+    await asegurarStats(db, cuenta);
     return cacheado("cooldown", "Los datos se actualizaron hace menos de 10 minutos.");
   }
 
@@ -157,7 +196,7 @@ export async function syncAccount(cuentaId, { force = false } = {}) {
       .eq("id", cuenta.id);
     if (errU) throw errU;
 
-    // TODO(T11): computeStats() sobre partidas_jugador → estadisticas_jugador.
+    await recalcularStats(db, cuenta.id, puuid);
 
     return {
       estado: "actualizado",
@@ -169,7 +208,10 @@ export async function syncAccount(cuentaId, { force = false } = {}) {
     };
   } catch (err) {
     // Si Riot falla, la demo sigue con lo que ya está guardado.
-    if (err instanceof RiotError) return cacheado("stale", `Mostrando datos guardados. ${MENSAJES_RIOT[err.code]}`);
+    if (err instanceof RiotError) {
+      await asegurarStats(db, cuenta);
+      return cacheado("stale", `Mostrando datos guardados. ${MENSAJES_RIOT[err.code]}`);
+    }
     throw err;
   }
 }
