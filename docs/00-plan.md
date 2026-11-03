@@ -26,13 +26,13 @@
 - [x] **T03** Clientes de Supabase (`src/lib/supabase/client.js`, `server.js`, `admin.js`) + `src/middleware.js` que refresca la sesión y protege rutas.
 - [x] **T04** Deploy en Vercel con las variables de entorno. Una página "hola" online = deploy funcionando.
 - [x] **T05** Login / registro / logout + `/onboarding` (elegir `nombre_usuario` y "¿venís a buscar equipo o jugadores?"). Si el usuario no tiene fila en `perfiles`, el middleware lo manda a `/onboarding`.
-- [ ] **T06** Layout base: navbar (Jugadores · Equipos · Torneos · Mi perfil), tokens de diseño provisionales en `globals.css` + `tailwind.config`, y componentes mínimos en `src/components/ui/` (Button, Card, Badge, Input, Select, Spinner, EmptyState, ErrorState).
+- [x] **T06** Layout base: navbar (Jugadores · Equipos · Torneos · Mi perfil), tokens de diseño provisionales en `globals.css` + `tailwind.config`, y componentes mínimos en `src/components/ui/` (Button, Card, Badge, Input, Select, Spinner, EmptyState, ErrorState).
 
 ## Día 2 — Martes 3/11 (presencial) · Riot API
-- [ ] **T07** `src/lib/riot/client.js`: fetch con `X-Riot-Token`, rate limit en memoria, reintento ante 429 respetando `Retry-After`, timeout y errores tipados (`NOT_FOUND`, `RATE_LIMITED`, `KEY_INVALID`, `UNAVAILABLE`). + `regions.js` y `endpoints.js`.
-- [ ] **T08** Vincular cuenta (`/perfil/vincular`): formulario con Riot ID (`Nombre#TAG`) y región → el servidor resuelve el `puuid` → guarda en `cuentas_riot` con `verificada=false` y le asigna un ícono de verificación al azar.
-- [ ] **T09** Verificar la cuenta: el jugador se pone ese ícono en el cliente de LoL → botón "Verificar" → el servidor compara `profileIconId` → `verificada=true` (ver `04-riot-api.md`). También se puede "Verificar después" (el perfil muestra el badge "no verificada").
-- [ ] **T10** `src/lib/riot/sync.js`: sincroniza rango, IDs de partidas y **solo** las partidas nuevas → `partidas` + `partidas_jugador`. Cooldown de 10 min por cuenta. Endpoint `POST /api/riot/sincronizar`.
+- [x] **T07** `src/lib/riot/client.js`: fetch con `X-Riot-Token`, rate limit en memoria, reintento ante 429 respetando `Retry-After`, timeout y errores tipados (`NOT_FOUND`, `RATE_LIMITED`, `KEY_INVALID`, `UNAVAILABLE`). + `regions.js` y `endpoints.js`.
+- [x] **T08** Vincular cuenta (`/perfil/vincular`): formulario con Riot ID (`Nombre#TAG`) y región → el servidor resuelve el `puuid` → guarda en `cuentas_riot` con `verificada=false` y le asigna un ícono de verificación al azar.
+- [x] **T09** Verificar la cuenta: el jugador se pone ese ícono en el cliente de LoL → botón "Verificar" → el servidor compara `profileIconId` → `verificada=true` (ver `04-riot-api.md`). También se puede "Verificar después" (el perfil muestra el badge "no verificada").
+- [x] **T10** `src/lib/riot/sync.js`: sincroniza rango, IDs de partidas y **solo** las partidas nuevas → `partidas` + `partidas_jugador`. Cooldown de 10 min por cuenta. Endpoint `POST /api/riot/sincronizar`. *(computeStats → `estadisticas_jugador` queda para la T11: TODO en sync.js)*
 
 ## Día 3 — Miércoles 4/11 (presencial, cierre) · Perfil
 - [ ] **T11** `src/lib/stats.js` (funciones puras): winrate, por campeón y por rol, KDA, CS/min, visión/min, kill participation, forma reciente (últimas 10). Guarda el resumen en `estadisticas_jugador`. Seed de `benchmarks_rango` marcado como `fuente='estimado'`.

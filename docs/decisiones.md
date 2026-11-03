@@ -1,6 +1,6 @@
 # Registro de decisiones
 
-> Formato: `AAAA-MM-DD — Decisión — Motivo (1-2 líneas)`. Claude Code agrega una línea cada vez que se decide algo que el jurado podría preguntar.
+> Formato: `AAAA-MM-DD — Decisión — Motivo (1-2 líneas)`. Se agrega una línea cada vez que se decide algo que el jurado podría preguntar.
 
 - 2026-11-02 — Next.js full-stack + Supabase + Gemini, en JavaScript — Stack que Ian ya domina; un repo y un deploy para un solo dev.
 - 2026-11-02 — Solo LoL (cola 420, últimas 20 partidas) en la demo — Acotar para que sea estable; Valorant/CS2 van al roadmap.
@@ -16,3 +16,11 @@
 - 2026-11-02 — `src/proxy.js` en vez de `middleware.js` — En Next 16 el middleware pasó a llamarse Proxy; la lógica de sesión vive en `src/lib/supabase/proxy.js`.
 - 2026-11-02 — Se mantiene `cacheComponents` de Next 16 y lo que lee cookies/searchParams va dentro de <Suspense> — La parte estática se prerenderiza y la sesión se streamea; desactivarlo era más fácil pero perdíamos performance.
 - 2026-11-02 — Auth con server actions + useActionState — Validación en el servidor, sin endpoints extra y errores traducidos en la UI.
+- 2026-11-03 — Rate limiter propio (ventanas deslizantes 20/s y 100/2 min) en vez de `bottleneck` — Una dependencia menos y es poco código; igual cada instancia de Vercel tiene el suyo, así que el respaldo real es el manejo del 429.
+- 2026-11-03 — Ante un 429 se reintenta una vez solo si `Retry-After` ≤ 10 s — Esperar más dejaría colgada la función serverless; mejor devolver `RATE_LIMITED` y mostrar lo cacheado.
+- 2026-11-03 — `rango_valor = tier*10000 + división*1000 + LP` — El salto de 10000 por tier hace que un Maestro con muchos LP nunca supere el mínimo de Gran Maestro en los filtros.
+- 2026-11-03 — Si Riot falla (cualquier `RiotError`) el sync devuelve `estado: "stale"` con lo guardado — La demo no se rompe aunque se venza la key o la API esté saturada.
+- 2026-11-03 — Los remakes se guardan en `partidas` (caché) pero no en `partidas_jugador` — No se vuelven a pedir a Riot en cada sync y no ensucian las stats.
+- 2026-11-03 — Si una partida ya está en caché porque la trajo otro jugador, se extrae nuestra fila desde `partidas.datos` — Cero requests extra cuando dos jugadores de la plataforma jugaron juntos.
+- 2026-11-03 — El sync también llama a summoner-v4 (1 request más) — Mantiene actualizados el ícono y el nivel que muestra el perfil.
+- 2026-11-03 — Verificar dispara el primer sync con `force`; si el sync falla, la verificación igual queda hecha — Son cosas independientes y la verificación es lo que importa.
