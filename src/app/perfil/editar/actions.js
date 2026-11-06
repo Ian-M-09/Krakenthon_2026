@@ -3,23 +3,14 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ROLES, IDIOMAS, PAISES, TIPOS_CONTACTO, VISIBILIDADES } from "@/lib/catalogos";
-import { esZonaValida, normalizarHorarios } from "@/lib/horarios";
+import { esZonaValida, normalizarHorarios, horariosDesdeFormData } from "@/lib/horarios";
 
 const BIO_MAX = 500;
 const CONTACTO_MAX = 120;
 
 // Lee el formulario tal cual vino (para devolverlo si hay un error y no perder lo cargado).
 function leerFormulario(formData) {
-  const horarios = [];
-  for (let dia = 0; dia < 7; dia++) {
-    if (formData.get(`dia_${dia}_activo`)) {
-      horarios.push({
-        dia,
-        desde: String(formData.get(`dia_${dia}_desde`) ?? ""),
-        hasta: String(formData.get(`dia_${dia}_hasta`) ?? ""),
-      });
-    }
-  }
+  const horarios = horariosDesdeFormData(formData);
   return {
     pais: String(formData.get("pais") ?? ""),
     idiomas: formData.getAll("idiomas").map(String),

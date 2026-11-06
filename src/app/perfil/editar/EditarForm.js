@@ -6,74 +6,10 @@ import Card from "@/components/ui/Card";
 import Input, { claseCampo } from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import { ROLES, IDIOMAS, PAISES, TIPOS_CONTACTO, VISIBILIDADES, aOpciones } from "@/lib/catalogos";
-import { DIAS, ZONAS_HORARIAS } from "@/lib/horarios";
+import { ZONAS_HORARIAS } from "@/lib/horarios";
+import Checkboxes from "@/components/forms/Checkboxes";
+import EditorHorarios from "@/components/forms/EditorHorarios";
 import { guardarDisponibilidad } from "./actions";
-
-// Grupo de checkboxes con el mismo `name` (llegan con formData.getAll).
-function Checkboxes({ legend, name, catalogo, seleccionados }) {
-  return (
-    <fieldset className="space-y-2">
-      <legend className="text-sm">{legend}</legend>
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(catalogo).map(([valor, label]) => (
-          <label
-            key={valor}
-            className="cursor-pointer rounded-full border border-border px-3 py-1 text-sm has-[:checked]:border-accent has-[:checked]:text-accent"
-          >
-            <input
-              type="checkbox"
-              name={name}
-              value={valor}
-              defaultChecked={seleccionados.includes(valor)}
-              className="sr-only"
-            />
-            {label}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
-function EditorHorarios({ horarios }) {
-  const porDia = Object.fromEntries(horarios.map((h) => [h.dia, h]));
-  return (
-    <fieldset className="space-y-2">
-      <legend className="text-sm">Horarios en los que podés jugar</legend>
-      <p className="text-xs text-muted">
-        Si terminás después de medianoche, poné la hora de fin igual (ej. 22:00 → 01:00).
-      </p>
-      <ul className="space-y-2">
-        {DIAS.map((nombre, dia) => {
-          const h = porDia[dia];
-          return (
-            <li key={dia} className="flex flex-wrap items-center gap-2">
-              <label className="flex w-32 items-center gap-2 text-sm">
-                <input type="checkbox" name={`dia_${dia}_activo`} defaultChecked={!!h} />
-                {nombre}
-              </label>
-              <input
-                type="time"
-                name={`dia_${dia}_desde`}
-                defaultValue={h?.desde ?? "20:00"}
-                aria-label={`${nombre} desde`}
-                className={`${claseCampo} w-32`}
-              />
-              <span className="text-muted">a</span>
-              <input
-                type="time"
-                name={`dia_${dia}_hasta`}
-                defaultValue={h?.hasta ?? "23:00"}
-                aria-label={`${nombre} hasta`}
-                className={`${claseCampo} w-32`}
-              />
-            </li>
-          );
-        })}
-      </ul>
-    </fieldset>
-  );
-}
 
 export default function EditarForm({ inicial }) {
   const [state, formAction, pending] = useActionState(guardarDisponibilidad, null);

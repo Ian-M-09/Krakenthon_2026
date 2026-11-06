@@ -30,6 +30,23 @@ export function rangoValor(tier, division, lp = 0) {
   return t * 10000 + d * 1000 + Math.min(Math.max(lp ?? 0, 0), 9999);
 }
 
+// Posición en "escalones de división": Hierro IV = 0, Hierro III = 1 ... Diamante I = 27,
+// Maestro = 28, Gran Maestro = 29, Retador = 30. Sirve para "a cuántas divisiones está".
+export function indiceDivision(tier, division = "IV") {
+  const t = TIERS.indexOf(tier);
+  if (t === -1) return null;
+  if (TIERS_APEX.has(tier)) return 28 + (t - TIERS.indexOf("MASTER"));
+  return t * 4 + Math.max(0, DIVISIONES.indexOf(division));
+}
+
+// Valor máximo de un tier (para filtrar "hasta Diamante").
+export const maximoTier = (tier) => {
+  const t = TIERS.indexOf(tier);
+  return t === -1 ? null : t * 10000 + 9999;
+};
+
+export const esTier = (t) => TIERS.includes(t);
+
 // Valor mínimo de un tier, para filtrar "rango_valor >= minimoTier('EMERALD')".
 export const minimoTier = (tier) => rangoValor(tier, "IV", 0);
 

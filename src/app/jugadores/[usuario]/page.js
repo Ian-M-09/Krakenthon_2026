@@ -14,6 +14,11 @@ import {
   ComparacionRango,
 } from "@/components/perfil/StatsVerificadas";
 import { DatosDeclarados, Contacto } from "@/components/perfil/DatosDeclarados";
+import InformeIA from "@/components/perfil/InformeIA";
+import { cargarDatosInforme, hashInput } from "@/lib/ia/informe";
+import Compatibilidad from "@/components/buscador/Compatibilidad";
+import { getEquiposStaff } from "@/lib/equipos";
+import { calcularCompatibilidad } from "@/lib/compatibilidad";
 
 export const metadata = { title: "Perfil de jugador" };
 
@@ -83,6 +88,30 @@ async function Perfil({ params }) {
   ]);
   const resumen = stats?.resumen;
 
+  // Último informe IA guardado y si corresponde a las stats actuales (mismo hash del input).
+  const [{ data: informe }, inputActual] = cuenta
+    ? await Promise.all([
+        supabase
+          .from("informes_ia")
+          .select("contenido, creado_en, stats_hash")
+          .eq("cuenta_id", cuenta.id)
+          .order("creado_en", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        resumen ? cargarDatosInforme(supabase, cuenta.id, perfil.id) : null,
+      ])
+    : [{ data: null }, null];
+  const informeDesactualizado = !!informe && !!inputActual && informe.stats_hash !== hashInput(inputActual);
+
+  // Compatibilidad (T18): solo si quien mira es dueño/reclutador de un equipo (se usa el primero).
+  const [equipo] = esPropio ? [] : await getEquiposStaff(supabase, authData?.user?.id);
+  const compat =
+    equipo &&
+    calcularCompatibilidad(
+      { ...datos, ...cuenta, rol_principal: resumen?.rol_principal },
+      equipo
+    );
+
   return (
     <>
       <PerfilHeader
@@ -92,6 +121,8 @@ async function Perfil({ params }) {
         esPropio={esPropio}
         ahora={new Date()}
       />
+
+      {compat && <Compatibilidad resultado={compat} equipoNombre={equipo.nombre} abierto />}
 
       {!cuenta ? (
         esPropio && (
@@ -123,6 +154,15 @@ async function Perfil({ params }) {
             <FormaReciente forma={resumen.forma_reciente} />
           </div>
         </>
+      )}
+
+      {cuenta && (
+        <InformeIA
+          informeInicial={informe}
+          esPropio={esPropio}
+          desactualizado={informeDesactualizado}
+          hayStats={!!resumen && resumen.partidas > 0}
+        />
       )}
 
       <div className="grid gap-4 md:grid-cols-3">

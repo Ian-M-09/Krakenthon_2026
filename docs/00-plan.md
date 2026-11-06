@@ -38,19 +38,19 @@
 - [x] **T11** `src/lib/stats.js` (funciones puras): winrate, por campeón y por rol, KDA, CS/min, visión/min, kill participation, forma reciente (últimas 10). Guarda el resumen en `estadisticas_jugador`. Seed de `benchmarks_rango` marcado como `fuente='estimado'`.
 - [x] **T12** Perfil público `/jugadores/[nombre_usuario]`: header (ícono, Riot ID, rango, badge verificado, "actualizado hace X"), cards de stats, tabla por campeón, distribución por rol, forma reciente, comparación vs. su rango y datos declarados.
 - [x] **T13** Editar datos declarados (`/perfil/editar`): país, idiomas, roles, horarios + zona horaria, bio, contacto + visibilidad. Los horarios se muestran **convertidos a la zona horaria del que mira** (`src/lib/horarios.js`).
-- [ ] 🎯 **Hito día 3:** registro → vincular → verificar → ver perfil con stats reales, en producción.
+- [x] 🎯 **Hito día 3:** registro → vincular → verificar → ver perfil con stats reales, en producción.
 
 ## Día 4 — Jueves 5/11 (remoto) · IA: informe de scouting
-- [ ] **T14** `src/lib/ia/gemini.js`: wrapper con timeout, salida JSON con `responseSchema`, validación y errores amigables.
-- [ ] **T15** Informe de scouting (`POST /api/ia/informe`): genera desde `estadisticas_jugador` + `benchmarks_rango` y lo cachea en `informes_ia` por hash de stats. UI: sección "Informe de scouting IA" en el perfil, con botón de generar/regenerar y estado de carga.
+- [x] **T14** `src/lib/ia/gemini.js`: wrapper con timeout, salida JSON con `responseSchema`, validación y errores amigables.
+- [x] **T15** Informe de scouting (`POST /api/ia/informe`): genera desde `estadisticas_jugador` + `benchmarks_rango` y lo cachea en `informes_ia` por hash de stats. UI: sección "Informe de scouting IA" en el perfil, con botón de generar/regenerar y estado de carga. *(falta probarlo con la `GEMINI_API_KEY` real)*
 
 ## Día 5 — Viernes 6/11 (remoto) · Equipos + buscador
-- [ ] **T16** Equipos: crear (`/equipos/nuevo`), ver (`/equipos/[id]`), editar y gestionar miembros (agregar por `nombre_usuario` con rol dueño/reclutador/jugador, quitar, salir). Listado `/equipos`.
-- [ ] **T17** Buscador de jugadores `/jugadores`: filtros por rol, rango mín/máx, idioma, país, "solo verificados" y "buscando equipo". Filtros en la URL (`?rol=UTILITY&rangoMin=EMERALD`) y query en el servidor sobre `vista_jugadores`.
-- [ ] **T18** `src/lib/compatibilidad.js` (algoritmo determinístico, ver `05-ia-gemini.md`) → el % se muestra en los resultados y en el perfil si el usuario que mira es dueño/reclutador de un equipo.
+- [x] **T16** Equipos: crear (`/equipos/nuevo`), ver (`/equipos/[id]`), editar y gestionar miembros (agregar por `nombre_usuario` con rol dueño/reclutador/jugador, quitar, salir). Listado `/equipos`.
+- [x] **T17** Buscador de jugadores `/jugadores`: filtros por rol, rango mín/máx, idioma, país, "solo verificados" y "buscando equipo". Filtros en la URL (`?rol=UTILITY&rangoMin=EMERALD`) y query en el servidor sobre `vista_jugadores`.
+- [x] **T18** `src/lib/compatibilidad.js` (algoritmo determinístico, ver `05-ia-gemini.md`) → el % se muestra en los resultados y en el perfil si el usuario que mira es dueño/reclutador de un equipo.
 
 ## Día 6 — Sábado 7/11 (remoto) · Lenguaje natural + diseño
-- [ ] **T19** Búsqueda en lenguaje natural: input arriba del buscador → `POST /api/ia/busqueda` → filtros JSON validados → redirige a `/jugadores?...` (reutiliza T17). Se muestran como chips editables "Entendí: Support · Esmeralda+ · Español · Noche".
+- [ ] **T19** Búsqueda en lenguaje natural: input arriba del buscador → `POST /api/ia/busqueda` → filtros JSON validados → redirige a `/jugadores?...` (reutiliza T17). Se muestran como chips editables "Entendí: Support · Esmeralda+ · Español · Noche". *(Servidor listo: `src/lib/ia/busqueda.js` + `POST /api/ia/busqueda` con caché y mock. Falta: input + chips en `/jugadores` y filtro por franja horaria.)*
 - [ ] **T20** Solicitudes equipo ↔ jugador (invitar / postularse, aceptar / rechazar). *Opcional si el día viene justo.*
 - [ ] **T21** Aplicar el diseño de marketing: reemplazar los tokens, tipografías, logo y pulir las pantallas principales. **Depende de que llegue el diseño.**
 - [ ] **T22** Script de seed para la demo (`scripts/seed-demo.mjs`): cuentas del equipo (con su permiso) + 2-3 equipos de ejemplo, para que el buscador no se vea vacío.

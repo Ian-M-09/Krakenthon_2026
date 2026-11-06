@@ -8,11 +8,11 @@ import { convertirHorarios, DIAS_CORTOS } from "@/lib/horarios";
 const zonaDelNavegador = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const sinSuscripcion = () => () => {};
 
-export default function HorariosVista({ horarios, zonaJugador }) {
+export default function HorariosVista({ horarios, zonaJugador, quien = "El jugador" }) {
   const zonaVisitante = useSyncExternalStore(sinSuscripcion, zonaDelNavegador, () => null);
   const zona = zonaVisitante ?? zonaJugador;
 
-  if (!horarios?.length) return <p className="text-sm text-muted">No cargó horarios.</p>;
+  if (!horarios?.length) return <p className="text-sm text-muted">Sin horarios cargados.</p>;
 
   const bloques = convertirHorarios(horarios, zonaJugador, zona);
   return (
@@ -29,7 +29,7 @@ export default function HorariosVista({ horarios, zonaJugador }) {
       </ul>
       <p className="text-xs text-muted">
         {zonaVisitante && zonaVisitante !== zonaJugador
-          ? `Convertido a tu zona horaria (${zona}). El jugador los cargó en ${zonaJugador}.`
+          ? `Convertido a tu zona horaria (${zona}). ${quien} los cargó en ${zonaJugador}.`
           : `Zona horaria: ${zona}`}
       </p>
     </div>

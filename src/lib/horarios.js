@@ -79,6 +79,21 @@ export function normalizarHorarios(horarios) {
     .sort((a, b) => a.dia - b.dia || aMinutos(a.desde) - aMinutos(b.desde));
 }
 
+// Lee los campos de <EditorHorarios> (dia_N_activo / dia_N_desde / dia_N_hasta) sin validar.
+export function horariosDesdeFormData(formData) {
+  const horarios = [];
+  for (let dia = 0; dia < 7; dia++) {
+    if (formData.get(`dia_${dia}_activo`)) {
+      horarios.push({
+        dia,
+        desde: String(formData.get(`dia_${dia}_desde`) ?? ""),
+        hasta: String(formData.get(`dia_${dia}_hasta`) ?? ""),
+      });
+    }
+  }
+  return horarios;
+}
+
 // Bloques → intervalos en minutos de la semana UTC: [{ inicio, fin }] con 0 = lunes 00:00 UTC.
 // `fin` puede pasar de MIN_SEMANA si el bloque cruza el domingo a la noche.
 export function aIntervalosUTC(horarios, tz, fecha = new Date()) {
