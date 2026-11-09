@@ -24,9 +24,10 @@ function Lista({ titulo, items, tono }) {
   );
 }
 
-// Informe de scouting IA. Solo el dueño del perfil lo puede generar o regenerar;
-// el resto ve el último guardado. Si Gemini falla, se muestra el error y el perfil sigue andando.
-export default function InformeIA({ informeInicial, esPropio, desactualizado, hayStats }) {
+// Informe de scouting IA. Lo pueden generar o regenerar el dueño del perfil y el staff
+// (dueño/reclutador) de cualquier equipo; el resto ve el último guardado. El servidor vuelve a
+// chequear el permiso. Si Gemini falla, se muestra el error y el perfil sigue andando.
+export default function InformeIA({ informeInicial, cuentaId, esPropio, puedeGenerar, desactualizado, hayStats }) {
   const [informe, setInforme] = useState(informeInicial);
   const [viejo, setViejo] = useState(desactualizado);
   const [cargando, setCargando] = useState(false);
@@ -36,7 +37,11 @@ export default function InformeIA({ informeInicial, esPropio, desactualizado, ha
     setCargando(true);
     setError(null);
     try {
-      const res = await fetch("/api/ia/informe", { method: "POST" }).then((r) => r.json());
+      const res = await fetch("/api/ia/informe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cuentaId }),
+      }).then((r) => r.json());
       if (res.ok) {
         setInforme(res.data);
         setViejo(false);
@@ -58,9 +63,13 @@ export default function InformeIA({ informeInicial, esPropio, desactualizado, ha
           <h2 className="text-lg font-semibold">Informe de scouting IA</h2>
           {c && <Badge tono="accent">{c.perfil_jugador}</Badge>}
         </div>
-        {esPropio && hayStats && (!c || viejo) && (
+        {puedeGenerar && hayStats && (!c || viejo) && (
           <Button onClick={generar} loading={cargando} className="text-sm">
-            {cargando ? "Analizando partidas..." : c ? "Regenerar con mis stats nuevas" : "Generar informe"}
+            {cargando
+              ? "Analizando partidas..."
+              : c
+                ? esPropio ? "Regenerar con mis stats nuevas" : "Actualizar informe"
+                : "Generar informe"}
           </Button>
         )}
       </div>
@@ -77,7 +86,9 @@ export default function InformeIA({ informeInicial, esPropio, desactualizado, ha
             ? "Hace falta tener partidas sincronizadas para generar el informe."
             : esPropio
               ? "Generá un análisis de tus partidas para que los equipos vean tus fortalezas de un vistazo."
-              : "Este jugador todavía no generó su informe."}
+              : puedeGenerar
+                ? "Todavía no hay informe. Como staff de un equipo podés generarlo ahora."
+                : "Todavía no hay un informe de este jugador."}
         </p>
       ) : (
         <>

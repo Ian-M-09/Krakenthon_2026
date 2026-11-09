@@ -115,6 +115,78 @@ export async function quitarMiembro(equipoId, usuarioId) {
   revalidatePath(`/equipos/${equipoId}`);
 }
 
+// ---------------------------------------------------------------------------
+// Postulaciones (T20, dirección jugador → equipo). Tabla `solicitudes` con RLS de schema.sql:
+// el jugador crea la suya (origen='jugador'); el staff (dueño/reclutador) las ve y responde.
+// ---------------------------------------------------------------------------
+const MENSAJE_MAX = 500;
+
+export async function postularme(equipoId, _prev, formData) {
+  if (!esUuid(equipoId)) return { error: "Equipo inválido." };
+  const mensaje = String(formData.get("mensaje") ?? "").trim();
+  if (mensaje.length > MENSAJE_MAX) return { error: `El mensaje puede tener hasta ${MENSAJE_MAX} caracteres.` };
+
+  const { supabase, user } = await usuarioActual();
+  const { data: miembro } = await supabase
+    .from("miembros_equipo")
+    .select("rol")
+    .eq("equipo_id", equipoId)
+    .eq("usuario_id", user.id)
+    .maybeSingle();
+  if (miembro) return { error: "Ya sos miembro de este equipo." };
+
+  const { error } = await supabase.from("solicitudes").insert({
+    equipo_id: equipoId,
+    jugador_id: user.id,
+    origen: "jugador",
+    mensaje: mensaje || null,
+  });
+  // Índice único parcial: una sola solicitud pendiente por jugador y equipo.
+  if (error?.code === "23505") return { error: "Ya tenés una postulación pendiente en este equipo." };
+  if (error) {
+    console.error("postularme", error);
+    return { error: "No pudimos enviar tu postulación. Probá de nuevo." };
+  }
+  revalidatePath(`/equipos/${equipoId}`);
+  return { ok: "¡Listo! El equipo va a ver tu postulación y tu perfil verificado." };
+}
+
+// Aceptar: el jugador entra como miembro. Por el RLS de miembros_equipo, solo el dueño puede.
+export async function aceptarSolicitud(equipoId, solicitudId) {
+  if (!esUuid(equipoId) || !esUuid(solicitudId)) return;
+  const { supabase } = await usuarioActual();
+  const { data: s } = await supabase
+    .from("solicitudes")
+    .select("jugador_id, estado")
+    .eq("id", solicitudId)
+    .eq("equipo_id", equipoId)
+    .maybeSingle();
+  if (!s || s.estado !== "pendiente") return;
+
+  const { error } = await supabase
+    .from("miembros_equipo")
+    .insert({ equipo_id: equipoId, usuario_id: s.jugador_id, rol: "jugador" });
+  // 23505 = ya era miembro: igual se marca como aceptada.
+  if (error && error.code !== "23505") {
+    console.error("aceptarSolicitud", error);
+    return;
+  }
+  await supabase.from("solicitudes").update({ estado: "aceptada" }).eq("id", solicitudId);
+  revalidatePath(`/equipos/${equipoId}`);
+}
+
+export async function rechazarSolicitud(equipoId, solicitudId) {
+  if (!esUuid(equipoId) || !esUuid(solicitudId)) return;
+  const { supabase } = await usuarioActual();
+  await supabase
+    .from("solicitudes")
+    .update({ estado: "rechazada" })
+    .eq("id", solicitudId)
+    .eq("equipo_id", equipoId)
+    .eq("estado", "pendiente");
+  revalidatePath(`/equipos/${equipoId}`);
+}
+
 export async function eliminarEquipo(equipoId) {
   if (!esUuid(equipoId)) return;
   const { supabase } = await usuarioActual();

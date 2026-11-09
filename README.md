@@ -13,7 +13,7 @@ Los equipos amateur y semi-pro reclutan por Discord con capturas de op.gg que se
 
 ## Demo
 - **Deploy:** TODO: https://krakenthon2026.vercel.app/
-- **Usuario reclutador de prueba:** `demo-equipos@krakethon.app` (la contraseña se entrega junto con la demo)
+- **Usuario reclutador de prueba:** TODO (se entrega junto con la demo)
 - Guion de la demo: [`docs/07-entrega.md`](docs/07-entrega.md)
 
 ## Funcionalidades
@@ -111,7 +111,7 @@ Registro completo: [`docs/decisiones.md`](docs/decisiones.md)
 | Persona | Rol |
 |---|---|
 | **Ian Alejandro Miño** | **Único programador y desarrollador de la plataforma.** Diseñó e implementó todo el producto: arquitectura, frontend, backend, base de datos y RLS, integración con la Riot API y con Gemini, deploy y tests. |
-| Pablo | Product Owner / Business Lead: preparó el pitch y la presentación para el jurado. No participó en el desarrollo del código. |
+| Pablito Jose Fernando Rios | Product Owner / Business Lead: preparó el pitch y la presentación para el jurado. No participó en el desarrollo del código. |
 
 ---
 Krakethon no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie oficialmente involucrado en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc.

@@ -12,7 +12,16 @@ import AgregarMiembro from "@/components/equipos/AgregarMiembro";
 import { ROLES, IDIOMAS, PAISES } from "@/lib/catalogos";
 import { LABEL_TIER } from "@/lib/rangos";
 import { NIVELES, ROLES_EQUIPO, esUuid } from "@/lib/equipos";
-import { agregarMiembro, cambiarRolMiembro, quitarMiembro, eliminarEquipo } from "../actions";
+import Postularme from "@/components/equipos/Postularme";
+import {
+  agregarMiembro,
+  cambiarRolMiembro,
+  quitarMiembro,
+  eliminarEquipo,
+  postularme,
+  aceptarSolicitud,
+  rechazarSolicitud,
+} from "../actions";
 
 export const metadata = { title: "Equipo" };
 
@@ -46,6 +55,18 @@ async function Equipo({ params }) {
   const miRol = miembros?.find((m) => m.usuario_id === userId)?.rol;
   const esDueno = miRol === "dueno";
   const esStaff = esDueno || miRol === "reclutador";
+
+  // Postulaciones: el RLS devuelve todas al staff y solo las propias a un jugador.
+  const { data: solicitudes } = userId
+    ? await supabase
+        .from("solicitudes")
+        .select("id, jugador_id, estado, mensaje, creado_en, perfiles(nombre_usuario)")
+        .eq("equipo_id", id)
+        .eq("origen", "jugador")
+        .order("creado_en", { ascending: false })
+    : { data: [] };
+  const pendientes = esStaff ? (solicitudes ?? []).filter((s) => s.estado === "pendiente") : [];
+  const miUltima = !esStaff ? (solicitudes ?? []).find((s) => s.jugador_id === userId) : null;
 
   // Link al buscador con los filtros del equipo ya cargados.
   const filtros = new URLSearchParams({ equipo: id, buscando: "1" });
@@ -97,6 +118,70 @@ async function Equipo({ params }) {
           </div>
         )}
       </Card>
+
+      {/* Jugador que no es miembro: postularse (o ver el estado de su postulación). */}
+      {!miRol &&
+        equipo.reclutando &&
+        (!userId ? (
+          <Card className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm">¿Querés jugar en {equipo.nombre}?</p>
+            <Link href={`/login?next=/equipos/${id}`} className={claseBoton("primario")}>
+              Iniciá sesión para postularte
+            </Link>
+          </Card>
+        ) : miUltima?.estado === "pendiente" ? (
+          <Card className="space-y-1">
+            <h2 className="font-semibold">Postulación enviada</h2>
+            <p className="text-sm text-muted">Pendiente de respuesta del equipo.</p>
+          </Card>
+        ) : (
+          <Postularme
+            action={postularme.bind(null, id)}
+            equipoNombre={equipo.nombre}
+            rechazadaAntes={miUltima?.estado === "rechazada"}
+          />
+        ))}
+
+      {/* Staff: postulaciones pendientes. */}
+      {esStaff && (
+        <Card className="space-y-3">
+          <h2 className="text-lg font-semibold">
+            Postulaciones pendientes {pendientes.length > 0 && <Badge tono="accent">{pendientes.length}</Badge>}
+          </h2>
+          {pendientes.length === 0 ? (
+            <p className="text-sm text-muted">No hay postulaciones nuevas.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {pendientes.map((s) => (
+                <li key={s.id} className="space-y-2 py-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link href={`/jugadores/${s.perfiles.nombre_usuario}`} className="font-medium hover:text-accent">
+                      {s.perfiles.nombre_usuario}
+                    </Link>
+                    <span className="text-xs text-muted">
+                      {s.creado_en.slice(0, 10).split("-").reverse().join("/")}
+                    </span>
+                    <div className="ml-auto flex gap-2">
+                      {esDueno && (
+                        <form action={aceptarSolicitud.bind(null, id, s.id)}>
+                          <button className={claseBoton("primario", "px-3 py-1 text-sm")}>Aceptar</button>
+                        </form>
+                      )}
+                      <form action={rechazarSolicitud.bind(null, id, s.id)}>
+                        <button className={claseBoton("ghost", "px-3 py-1 text-sm text-danger")}>Rechazar</button>
+                      </form>
+                    </div>
+                  </div>
+                  {s.mensaje && <p className="whitespace-pre-line text-sm text-muted">{s.mensaje}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!esDueno && pendientes.length > 0 && (
+            <p className="text-xs text-muted">Solo el dueño del equipo puede aceptar postulaciones.</p>
+          )}
+        </Card>
+      )}
 
       <Card className="space-y-4">
         <h2 className="text-lg font-semibold">Miembros</h2>

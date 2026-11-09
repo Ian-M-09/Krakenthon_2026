@@ -159,7 +159,9 @@ async function Perfil({ params }) {
       {cuenta && (
         <InformeIA
           informeInicial={informe}
+          cuentaId={cuenta.id}
           esPropio={esPropio}
+          puedeGenerar={esPropio || !!equipo}
           desactualizado={informeDesactualizado}
           hayStats={!!resumen && resumen.partidas > 0}
         />

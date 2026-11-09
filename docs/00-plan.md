@@ -51,9 +51,9 @@
 
 ## Día 6 — Sábado 7/11 (remoto) · Lenguaje natural + diseño
 - [x] **T19** Búsqueda en lenguaje natural: input arriba del buscador → `POST /api/ia/busqueda` → filtros JSON validados → redirige a `/jugadores?...` (reutiliza T17). Se muestran como chips editables "Entendí: Support · Esmeralda+ · Español · Noche".
-- [ ] **T20** Solicitudes equipo ↔ jugador (invitar / postularse, aceptar / rechazar). *Opcional si el día viene justo.*
+- [x] **T20** Solicitudes equipo ↔ jugador (invitar / postularse, aceptar / rechazar). *Opcional si el día viene justo.* *(Hecha la dirección jugador → equipo: postularse con mensaje, aceptar/rechazar. Las invitaciones equipo → jugador quedan para el roadmap.)*
 - [ ] **T21** Aplicar el diseño de marketing: reemplazar los tokens, tipografías, logo y pulir las pantallas principales. **Depende de que llegue el diseño.**
-- [ ] **T22** Script de seed para la demo (`scripts/seed-demo.mjs`): cuentas del equipo (con su permiso) + 2-3 equipos de ejemplo, para que el buscador no se vea vacío. *(Script listo: falta correrlo con `--aplicar`.)*
+- [x] **T22** Script de seed para la demo (`scripts/seed-demo.mjs`): cuentas del equipo (con su permiso) + 2-3 equipos de ejemplo, para que el buscador no se vea vacío. *(El script existe, pero Ian borró los equipos de ejemplo y el usuario demo el 9/11: el equipo de la demo lo crea él a mano.)*
 
 ## Día 7 — Domingo 8/11 (remoto) · Torneos, pulido y README · FREEZE 20:00
 - [x] **T23** Torneos (flujo simple): crear torneo → "depositar premio" (sandbox/simulado) → publicar → inscribir equipos → declarar ganador → "liberar pago − comisión". Estados en `torneos.estado`. Si no da el tiempo: pantalla mockup + roadmap. *(Se hizo la pantalla mockup + roadmap en `/torneos`.)*
