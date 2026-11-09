@@ -161,7 +161,7 @@ async function Perfil({ params }) {
           informeInicial={informe}
           cuentaId={cuenta.id}
           esPropio={esPropio}
-          puedeGenerar={esPropio || !!equipo}
+          puedeGenerar={!!authData?.user}
           desactualizado={informeDesactualizado}
           hayStats={!!resumen && resumen.partidas > 0}
         />

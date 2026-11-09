@@ -1,14 +1,14 @@
 // POST { cuentaId? }: genera (o devuelve del caché) el informe de scouting IA.
-// Sin cuentaId → la cuenta del usuario logueado. Con cuentaId de otro jugador → solo si quien
-// lo pide es dueño o reclutador de algún equipo (los que hacen scouting).
-// El informe es el mismo para todos (sale de las mismas stats): si lo genera un equipo, queda
-// actualizado para cualquiera que mire el perfil.
+// Sin cuentaId → la cuenta del usuario logueado. Con cuentaId → la de ese jugador: cualquier
+// usuario logueado puede generarlo (se pide sesión para que nadie de afuera gaste la cuota).
+// El informe es el mismo para todos (sale de las mismas stats) y el límite de 5 min es por
+// cuenta, así que muchos pedidos sobre el mismo jugador no multiplican el gasto de Gemini.
 import { ok, fail, failDesde } from "@/lib/api";
 import { getUsuario } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { cargarDatosInforme, hashInput, generarInforme } from "@/lib/ia/informe";
 import { IAError, MENSAJES_IA, esModoMock, MODELO_MOCK } from "@/lib/ia/gemini";
-import { getEquiposStaff, esUuid } from "@/lib/equipos";
+import { esUuid } from "@/lib/equipos";
 
 const COOLDOWN_MS = 5 * 60 * 1000;
 
@@ -23,13 +23,6 @@ export async function POST(request) {
       ? await db.from("cuentas_riot").select("id, usuario_id").eq("id", body.cuentaId).maybeSingle()
       : await db.from("cuentas_riot").select("id, usuario_id").eq("usuario_id", user.id).maybeSingle();
     if (!cuenta) return fail("NO_ACCOUNT", "No encontramos la cuenta de LoL de este jugador.", 404);
-
-    if (cuenta.usuario_id !== user.id) {
-      const equipos = await getEquiposStaff(db, user.id);
-      if (!equipos.length) {
-        return fail("FORBIDDEN", "Solo el jugador o el staff de un equipo pueden generar este informe.", 403);
-      }
-    }
 
     const input = await cargarDatosInforme(db, cuenta.id, cuenta.usuario_id);
     if (!input) {

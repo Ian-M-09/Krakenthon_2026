@@ -24,9 +24,8 @@ function Lista({ titulo, items, tono }) {
   );
 }
 
-// Informe de scouting IA. Lo pueden generar o regenerar el dueño del perfil y el staff
-// (dueño/reclutador) de cualquier equipo; el resto ve el último guardado. El servidor vuelve a
-// chequear el permiso. Si Gemini falla, se muestra el error y el perfil sigue andando.
+// Informe de scouting IA. Lo puede generar o actualizar cualquier usuario logueado; sin sesión
+// se ve el último guardado. Si Gemini falla, se muestra el error y el perfil sigue andando.
 export default function InformeIA({ informeInicial, cuentaId, esPropio, puedeGenerar, desactualizado, hayStats }) {
   const [informe, setInforme] = useState(informeInicial);
   const [viejo, setViejo] = useState(desactualizado);
@@ -87,8 +86,8 @@ export default function InformeIA({ informeInicial, cuentaId, esPropio, puedeGen
             : esPropio
               ? "Generá un análisis de tus partidas para que los equipos vean tus fortalezas de un vistazo."
               : puedeGenerar
-                ? "Todavía no hay informe. Como staff de un equipo podés generarlo ahora."
-                : "Todavía no hay un informe de este jugador."}
+                ? "Todavía no hay informe de este jugador. Podés generarlo ahora."
+                : "Todavía no hay un informe de este jugador. Iniciá sesión para generarlo."}
         </p>
       ) : (
         <>
