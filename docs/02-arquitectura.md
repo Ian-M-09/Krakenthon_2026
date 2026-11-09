@@ -79,11 +79,11 @@ POST /api/riot/verificar
 POST /api/riot/sincronizar
   → si sincronizado_en < 10 min → devuelve lo cacheado (sin llamar a Riot)
   → league-v4 by-puuid → rango
-  → match-v5 ids (queue=420, count=20)
+  → match-v5 ids (queue=420, count=30)
   → filtra los match_id que ya están en `partidas` → pide SOLO los nuevos
   → inserta partidas + partidas_jugador → computeStats() → estadisticas_jugador
 ```
-Las partidas son inmutables, así que se cachean para siempre. Un perfil que se re-sincroniza gasta ~4 requests en lugar de ~24.
+Las partidas son inmutables, así que se cachean para siempre. Un perfil que se re-sincroniza gasta ~4 requests en lugar de ~33.
 
 ### IA
 Ver `05-ia-gemini.md`. Resumen: informe = Gemini con JSON schema + caché por hash; búsqueda = Gemini → JSON de filtros → validación con whitelist → query hecha por el código; compatibilidad = algoritmo determinístico (sin LLM).
@@ -94,7 +94,7 @@ Ver `05-ia-gemini.md`. Resumen: informe = Gemini con JSON schema + caché por ha
 | Next.js full-stack (sin backend aparte) | Una sola persona programando: un repo, un deploy. Los route handlers son el backend y las keys quedan en el servidor. |
 | Supabase con RLS | Auth + Postgres + permisos en la propia BD. Aunque alguien manipule el front, la BD no le deja escribir sus stats ni ver contactos ocultos. |
 | Contacto en una tabla aparte | RLS filtra filas, no columnas. Separar `contactos_jugador` permite que el perfil sea público y el contacto no. |
-| Caché de partidas en Postgres | Respeta el rate limit de Riot (100 req / 2 min con dev key), hace que el perfil cargue rápido y la demo sobreviva aunque la API o la key fallen. |
+| Caché de partidas en Postgres | Respeta el rate limit de Riot (leído de los headers de cada respuesta), hace que el perfil cargue rápido y la demo sobreviva aunque la API o la key fallen. |
 | Verificación por ícono | Sin production key no hay RSO. El ícono prueba que controlás la cuenta (lo mismo que hacen otras plataformas). RSO queda en el roadmap. |
 | El LLM no escribe SQL | Evita la inyección por prompt: el LLM solo propone filtros, que se validan contra una whitelist. |
 | Compatibilidad sin LLM | Es explicable, instantánea, gratis y da siempre el mismo resultado. El LLM se usa donde aporta (redactar, interpretar), no para sumar puntajes. |

@@ -3,7 +3,7 @@
 // la arma el buscador (src/app/jugadores/page.js) como con los filtros manuales.
 import "server-only";
 import { z } from "zod";
-import { generateJSON, esModoMock } from "./gemini";
+import { generateJSON, esModoMock, recortar } from "./gemini";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLES, IDIOMAS, PAISES } from "@/lib/catalogos";
 import { TIERS } from "@/lib/rangos";
@@ -178,6 +178,7 @@ export async function interpretarBusqueda(texto) {
     prompt: `Pedido del reclutador:\n"""${String(texto).slice(0, TEXTO_MAX)}"""`,
     schema: schemaBusqueda,
     mock: () => mockBusqueda(texto),
+    preparar: (d) => (d && typeof d === "object" ? { ...d, texto_libre_no_entendido: recortar(d.texto_libre_no_entendido ?? "", TEXTO_MAX) } : d),
     temperature: 0,
   });
   const filtros = sanear(crudo);

@@ -22,7 +22,7 @@ Identidad competitiva **verificada** para jugadores de LoL de LATAM: stats que s
 - ✅ Acepta si: con una cuenta real, el flujo completo termina con el badge "Verificada" y queda registrado en la BD.
 
 ### P2 — Perfil del jugador
-- Stats **calculadas por el servidor** sobre las últimas 20 ranked solo/duo (cola 420): winrate, KDA, CS/min, visión/min, kill participation, por campeón (top 5), por rol y forma reciente (10).
+- Stats **calculadas por el servidor** sobre las últimas 30 ranked solo/duo (cola 420): winrate, KDA, CS/min, visión/min, kill participation, por campeón (top 5), por rol y forma reciente (10).
 - Rango solo/duo (tier, división, LP, W/L).
 - Comparación vs. el promedio de su tier (benchmarks estimados; en la UI se aclara "valores de referencia estimados").
 - Datos declarados editables; las stats **no** (no hay ninguna policy de escritura para el cliente).

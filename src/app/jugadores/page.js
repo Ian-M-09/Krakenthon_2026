@@ -2,7 +2,9 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getVersion } from "@/lib/riot/ddragon";
 import { minimoTier, maximoTier } from "@/lib/rangos";
-import { parsearFiltros, hayFiltros } from "@/lib/busqueda";
+import { parsearFiltros, hayFiltros, juegaEnFranja } from "@/lib/busqueda";
+import BusquedaIA from "@/components/buscador/BusquedaIA";
+import Chips from "@/components/buscador/Chips";
 import { getEquiposStaff } from "@/lib/equipos";
 import { calcularCompatibilidad } from "@/lib/compatibilidad";
 import Spinner from "@/components/ui/Spinner";
@@ -53,18 +55,24 @@ async function Resultados({ searchParams }) {
   if (filtros.paises.length) q = q.in("pais", filtros.paises);
   if (filtros.verificados) q = q.eq("verificada", true);
   if (filtros.buscando) q = q.eq("buscando_equipo", true);
+  // La franja horaria se filtra en JS (horarios en JSONB con la zona de cada jugador), así que
+  // traemos más filas y recortamos después.
   q = q
     .order("verificada", { ascending: false, nullsFirst: false })
     .order("rango_valor", { ascending: false, nullsFirst: false })
-    .limit(LIMITE);
+    .limit(filtros.franja ? LIMITE * 4 : LIMITE);
 
-  const [{ data: jugadores, error }, equipos, version] = await Promise.all([
+  const [{ data: filas, error }, equipos, version] = await Promise.all([
     q,
     getEquiposStaff(supabase, user?.id),
     getVersion(),
   ]);
 
   const filtrosUI = <Filtros filtros={filtros} equipos={equipos} />;
+  const ahora = new Date();
+  const jugadores = (filas ?? [])
+    .filter((j) => !filtros.franja || juegaEnFranja(j, filtros.franja, filtros.tz, ahora))
+    .slice(0, LIMITE);
   if (error) {
     console.error("buscador", error);
     return (
@@ -86,7 +94,6 @@ async function Resultados({ searchParams }) {
           .in("cuenta_id", ids)
       : { data: [] };
     const rolPrincipal = Object.fromEntries((roles ?? []).map((r) => [r.cuenta_id, r.rol_principal]));
-    const ahora = new Date();
     lista = jugadores
       .map((j) => ({
         ...j,
@@ -97,6 +104,13 @@ async function Resultados({ searchParams }) {
 
   return (
     <Layout filtros={filtrosUI}>
+      <BusquedaIA key={filtros.q} textoInicial={filtros.q} equipo={equipo?.id ?? null} />
+      <Chips filtros={filtros} />
+      {filtros.franja && (
+        <p className="text-xs text-muted">
+          Horario convertido desde tu zona ({filtros.tz}) a la de cada jugador.
+        </p>
+      )}
       <p className="text-sm text-muted">
         {lista.length === LIMITE ? `Mostrando los primeros ${LIMITE}` : `${lista.length} jugadores`}
         {equipo && ` · ordenados por compatibilidad con ${equipo.nombre}`}
@@ -124,10 +138,22 @@ async function Resultados({ searchParams }) {
   );
 }
 
+// En celular los filtros van plegados ("Filtros ▾") arriba de la búsqueda con IA, para no tapar
+// la pantalla; en escritorio quedan siempre abiertos al costado. Son dos copias del mismo form
+// porque un <details> cerrado no se puede forzar abierto solo con CSS.
 function Layout({ filtros, children }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-      <aside>{filtros}</aside>
+      <aside>
+        <details className="group lg:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 font-semibold [&::-webkit-details-marker]:hidden">
+            Filtros
+            <span aria-hidden className="text-muted transition group-open:rotate-180">▾</span>
+          </summary>
+          <div className="pt-2">{filtros}</div>
+        </details>
+        <div className="hidden lg:block">{filtros}</div>
+      </aside>
       <section className="space-y-3">{children}</section>
     </div>
   );

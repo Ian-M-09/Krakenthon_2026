@@ -5,10 +5,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { RiotError, MENSAJES_RIOT } from "./client";
 import { getSummonerByPuuid, getRankedSolo, getMatchIds, getMatch } from "./endpoints";
 import { rangoValor } from "@/lib/rangos";
-import { computeStats } from "@/lib/stats";
+import { computeStats, PARTIDAS_RESUMEN } from "@/lib/stats";
 
 // Recalcula el resumen desde lo guardado en la BD (sin llamar a Riot) y lo guarda.
-// Trae todas las filas del puuid y computeStats se queda con las 20 más recientes.
+// Trae todas las filas del puuid y computeStats se queda con las PARTIDAS_RESUMEN más recientes.
 export async function recalcularStats(db, cuentaId, puuid) {
   const { data, error } = await db
     .from("partidas_jugador")
@@ -44,8 +44,23 @@ async function asegurarStats(db, cuenta) {
 }
 
 export const COOLDOWN_MS = 10 * 60 * 1000;
-const PARTIDAS_A_TRAER = 20;
-const TANDA = 5; // partidas en paralelo (el limiter igual respeta los 20 req/s)
+// Como máximo 5 partidas pidiéndose a la vez; el limiter de client.js igual respeta los límites.
+const MAX_EN_PARALELO = 5;
+
+// Pool: mantiene hasta `max` tareas en curso y arranca la siguiente apenas termina una.
+// Devuelve los resultados en el mismo orden que `items`. Si una falla, falla todo (como Promise.all).
+async function enParalelo(items, max, fn) {
+  const resultados = new Array(items.length);
+  let siguiente = 0;
+  const trabajador = async () => {
+    while (siguiente < items.length) {
+      const i = siguiente++;
+      resultados[i] = await fn(items[i]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(max, items.length) }, trabajador));
+  return resultados;
+}
 
 // Fila de partidas_jugador para nuestro puuid, o null si es remake o no jugó.
 export function extraerParticipacion(match, puuid) {
@@ -122,7 +137,7 @@ export async function syncAccount(cuentaId, { force = false } = {}) {
     const [summoner, ranked, ids] = await Promise.all([
       getSummonerByPuuid(plataforma, puuid),
       getRankedSolo(plataforma, puuid),
-      getMatchIds(plataforma, puuid, PARTIDAS_A_TRAER),
+      getMatchIds(plataforma, puuid, PARTIDAS_RESUMEN),
     ]);
 
     // Partidas ya cacheadas (por este jugador o por otro que estuvo en la misma).
@@ -134,14 +149,8 @@ export async function syncAccount(cuentaId, { force = false } = {}) {
     const yaGuardadas = new Set(existentes.map((e) => e.match_id));
 
     // Solo pedimos a Riot las que no tenemos.
-    const nuevas = [];
     const faltantes = ids.filter((id) => !yaGuardadas.has(id));
-    for (let i = 0; i < faltantes.length; i += TANDA) {
-      const tanda = await Promise.all(
-        faltantes.slice(i, i + TANDA).map((id) => getMatch(plataforma, id))
-      );
-      nuevas.push(...tanda);
-    }
+    const nuevas = await enParalelo(faltantes, MAX_EN_PARALELO, (id) => getMatch(plataforma, id));
 
     if (nuevas.length) {
       const { error: errP } = await db

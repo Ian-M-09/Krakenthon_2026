@@ -50,22 +50,22 @@
 - [x] **T18** `src/lib/compatibilidad.js` (algoritmo determinístico, ver `05-ia-gemini.md`) → el % se muestra en los resultados y en el perfil si el usuario que mira es dueño/reclutador de un equipo.
 
 ## Día 6 — Sábado 7/11 (remoto) · Lenguaje natural + diseño
-- [ ] **T19** Búsqueda en lenguaje natural: input arriba del buscador → `POST /api/ia/busqueda` → filtros JSON validados → redirige a `/jugadores?...` (reutiliza T17). Se muestran como chips editables "Entendí: Support · Esmeralda+ · Español · Noche". *(Servidor listo: `src/lib/ia/busqueda.js` + `POST /api/ia/busqueda` con caché y mock. Falta: input + chips en `/jugadores` y filtro por franja horaria.)*
+- [x] **T19** Búsqueda en lenguaje natural: input arriba del buscador → `POST /api/ia/busqueda` → filtros JSON validados → redirige a `/jugadores?...` (reutiliza T17). Se muestran como chips editables "Entendí: Support · Esmeralda+ · Español · Noche".
 - [ ] **T20** Solicitudes equipo ↔ jugador (invitar / postularse, aceptar / rechazar). *Opcional si el día viene justo.*
 - [ ] **T21** Aplicar el diseño de marketing: reemplazar los tokens, tipografías, logo y pulir las pantallas principales. **Depende de que llegue el diseño.**
-- [ ] **T22** Script de seed para la demo (`scripts/seed-demo.mjs`): cuentas del equipo (con su permiso) + 2-3 equipos de ejemplo, para que el buscador no se vea vacío.
+- [ ] **T22** Script de seed para la demo (`scripts/seed-demo.mjs`): cuentas del equipo (con su permiso) + 2-3 equipos de ejemplo, para que el buscador no se vea vacío. *(Script listo: falta correrlo con `--aplicar`.)*
 
 ## Día 7 — Domingo 8/11 (remoto) · Torneos, pulido y README · FREEZE 20:00
-- [ ] **T23** Torneos (flujo simple): crear torneo → "depositar premio" (sandbox/simulado) → publicar → inscribir equipos → declarar ganador → "liberar pago − comisión". Estados en `torneos.estado`. Si no da el tiempo: pantalla mockup + roadmap.
-- [ ] **T24** Pasada de robustez: loading/empty/error en todas las pantallas, responsive mobile, 404 propia, `DEMO_MODE` probado (con la Riot API caída se sigue viendo lo cacheado).
-- [ ] **T25** Tests con Vitest para `stats.js`, `compatibilidad.js` y `horarios.js` (funciones puras: es rápido y suma en calidad del repo).
-- [ ] **T26** README completo (ver `07-entrega.md`) + diagrama de arquitectura (Mermaid) + capturas.
+- [x] **T23** Torneos (flujo simple): crear torneo → "depositar premio" (sandbox/simulado) → publicar → inscribir equipos → declarar ganador → "liberar pago − comisión". Estados en `torneos.estado`. Si no da el tiempo: pantalla mockup + roadmap. *(Se hizo la pantalla mockup + roadmap en `/torneos`.)*
+- [ ] **T24** Pasada de robustez: loading/empty/error en todas las pantallas, responsive mobile, 404 propia, `DEMO_MODE` probado (con la Riot API caída se sigue viendo lo cacheado). *(Hecho: 404 propia, `error.js`, onboarding según intención. Falta probar a mano: mobile 360 px y `DEMO_MODE=true`.)*
+- [x] **T25** Tests con Vitest para `stats.js`, `compatibilidad.js` y `horarios.js` (funciones puras: es rápido y suma en calidad del repo). *(22 tests: `npm test`.)*
+- [ ] **T26** README completo (ver `07-entrega.md`) + diagrama de arquitectura (Mermaid) + capturas. *(README escrito; faltan link del deploy, capturas y nombres del equipo: marcados como TODO.)*
 
 ## Día 8 — Lunes 9/11 · ENTREGA
-- [ ] **T27** Smoke test en producción con el guion de la demo (`07-entrega.md`). Renovar la key de Riot si es dev key.
+- [ ] **T27** Smoke test en producción con el guion de la demo (`07-entrega.md`).
 - [ ] **T28** Tag `v0.1.0-entrega`, verificar que el repo sea público y entregar: link al repo, link al deploy y el doc de pitch + roadmap (lo arma el equipo; Ian aporta la sección técnica).
 
 ## Del 10 al 14/11 · Antes del pitch
 - [ ] Ensayar la demo 3 veces desde una cuenta nueva.
-- [ ] El 14/11 a la mañana: renovar la key de Riot, redeploy y precalentar el caché de los perfiles que se van a mostrar.
+- [ ] El 14/11 a la mañana: verificar que Vercel tenga la clave de producción de Riot y precalentar el caché de los perfiles que se van a mostrar.
 - [ ] Preparar las respuestas técnicas (ver "Preguntas probables del jurado" en `02-arquitectura.md`).

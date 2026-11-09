@@ -56,4 +56,4 @@ npm run lint
 
 ## Variables de entorno
 Ver `.env.example`. En Vercel se cargan en Settings → Environment Variables.
-**La dev key de Riot vence cada 24 h**: hay que renovarla en developer.riotgames.com, actualizarla en `.env.local` y en Vercel, y redeployar.
+**Riot:** usamos una clave de producción aprobada por Riot (no vence). Tiene que ser la misma en `.env.local` y en Vercel: el `puuid` se encripta por aplicación, así que con otra clave los `puuid` guardados dejan de servir (ver `scripts/migrar-puuids.mjs`).

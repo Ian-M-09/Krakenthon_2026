@@ -1,7 +1,7 @@
 // Cálculo de stats a partir de las filas de `partidas_jugador` (docs/04-riot-api.md → Forma del resumen).
 // Funciones puras: no importan nada de Next ni de Supabase, así se pueden testear (T25).
 
-export const PARTIDAS_RESUMEN = 20;
+export const PARTIDAS_RESUMEN = 30; // ranked Solo/Duo analizadas por jugador (también las que pide el sync)
 export const MUESTRA_CHICA = 5;
 const FORMA_N = 10;
 const TOP_CAMPEONES = 5;

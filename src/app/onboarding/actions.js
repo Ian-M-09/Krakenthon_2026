@@ -43,6 +43,6 @@ export async function completarOnboarding(_prevState, formData) {
     .upsert({ usuario_id: user.id }, { onConflict: "usuario_id", ignoreDuplicates: true });
   if (errorPJ) console.error("onboarding: error al crear perfiles_jugador", errorPJ);
 
-  // TODO T12/T17: mandar a /jugadores o /equipos según la intención cuando existan esas páginas.
-  redirect("/");
+  // Quien busca equipo arranca vinculando su cuenta; quien busca jugadores, creando su equipo.
+  redirect(intencion === "busco_equipo" ? "/perfil/vincular" : "/equipos/nuevo");
 }

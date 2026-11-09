@@ -2,15 +2,11 @@
 
 > Antes de implementar, verificá cada endpoint en https://developer.riotgames.com/apis: Riot cambia endpoints y campos (por ejemplo, ya deprecó los `summonerId` en favor del `puuid`).
 
-## Keys y límites
-| Tipo | Vence | Límite | Uso |
-|---|---|---|---|
-| Development | cada 24 h | 20 req/s y 100 req/2 min | desarrollo, mientras se aprueba la otra |
-| Personal | no vence | igual que la dev | **pedirla el día 1 (T00)**: es para productos chicos o prototipos |
-| Production | no vence | más alto | roadmap: requiere producto funcional + revisión de Riot |
-
+## Clave y límites
+- Usamos una **clave de producción aprobada por Riot** (Production API Key, 7/11/2026). No vence.
 - Header: `X-Riot-Token: <RIOT_API_KEY>`. **Solo en el servidor.**
-- Si es dev key: renovarla, actualizar `.env.local` y Vercel, y **redeployar**. Hacerlo la mañana del 9/11 y la del 14/11.
+- Los límites **no están escritos en el código**: el cliente los lee de los headers de cada respuesta (ver "Cliente"). Si Riot sube los límites de la clave, la app los usa sola.
+- ⚠️ El `puuid` está encriptado **por aplicación**: al cambiar de clave cambian los `puuid` de todas las cuentas. Por eso existe `scripts/migrar-puuids.mjs` (re-resuelve cada cuenta por Riot ID).
 - Respetar las políticas: https://developer.riotgames.com/policies/general (no vender datos, mostrar el disclaimer de Riot en el footer, etc.). Texto para el footer: *"[Nombre] no está respaldado por Riot Games y no refleja las opiniones de Riot Games ni de nadie oficialmente involucrado en la producción o gestión de las propiedades de Riot Games. Riot Games y todas las propiedades asociadas son marcas comerciales o marcas registradas de Riot Games, Inc."*
 
 ## Routing
@@ -30,7 +26,7 @@
 | Riot ID → puuid | `GET /riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}` | regional |
 | Ícono y nivel | `GET /lol/summoner/v4/summoners/by-puuid/{puuid}` | plataforma |
 | Rango | `GET /lol/league/v4/entries/by-puuid/{puuid}` → filtrar `queueType === "RANKED_SOLO_5x5"` | plataforma |
-| IDs de partidas | `GET /lol/match/v5/matches/by-puuid/{puuid}/ids?queue=420&count=20` | regional |
+| IDs de partidas | `GET /lol/match/v5/matches/by-puuid/{puuid}/ids?queue=420&count=30` | regional |
 | Detalle de partida | `GET /lol/match/v5/matches/{matchId}` | regional |
 | (opcional) Maestrías | `GET /lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}/top?count=5` | plataforma |
 
@@ -44,10 +40,15 @@
 - Emblemas de rango: no están en Data Dragon. Usar los assets oficiales de Riot o íconos propios del diseño.
 
 ## Cliente (`src/lib/riot/client.js`) — requisitos
-- `riotFetch(url)` con un timeout de 8 s.
-- Rate limiter en memoria (por ej. `bottleneck` con `maxConcurrent: 5`, `minTime: 60` y una reserva de 100 cada 120 s). **Ojo:** en Vercel cada instancia serverless tiene su propio limiter. Para la demo alcanza; el respaldo real es manejar bien el 429.
-- 429 → esperar `Retry-After` segundos (como máximo 1 reintento) y, si vuelve a fallar, devolver `RATE_LIMITED`.
-- 401/403 → `KEY_INVALID` (key vencida) · 404 → `NOT_FOUND` · 5xx/timeout → `UNAVAILABLE`.
+- `riotFetch(url, metodo)` con un timeout de 8 s.
+- **Rate limiter con límites leídos de los headers** (ventanas deslizantes en memoria):
+  - `X-App-Rate-Limit` (ej. `100:120,20:1`) → un bucket por host (`americas`, `la2`...), porque Riot cuenta por región.
+  - `X-Method-Rate-Limit` (ej. `2000:10`) → un bucket por host y por endpoint (`metodo` lo pasa `endpoints.js`).
+  - `X-App-Rate-Limit-Count` / `X-Method-Rate-Limit-Count` → si Riot contó más requests que las que vio esta instancia (otra instancia de Vercel usó la clave), se suma la diferencia.
+  - Antes de la primera respuesta se usa un valor conservador (`20:1,100:120`). Si la espera necesaria supera 10 s → `RATE_LIMITED` (no se cuelga la función).
+- Partidas en paralelo: un pool con **5 como máximo** en curso.
+- 429 → esperar `Retry-After` segundos (como máximo 1 reintento, y solo si es ≤ 10 s) y, si vuelve a fallar, devolver `RATE_LIMITED`.
+- 401/403 → `KEY_INVALID` (clave rechazada) · 400/404 → `NOT_FOUND` · 5xx/timeout → `UNAVAILABLE`.
 - Si `DEMO_MODE=true` o el error es `KEY_INVALID`/`UNAVAILABLE`, el sync devuelve lo cacheado con `{ stale: true }` y la UI muestra "Mostrando datos guardados".
 
 ## Verificación de cuenta (por ícono)
@@ -58,9 +59,9 @@
 5. Después el jugador puede volver a su ícono.
 
 ## Presupuesto de requests
-- Primer sync: 1 (league) + 1 (ids) + 20 (partidas) = **22**. La vinculación suma 2 (account + summoner).
-- Re-sync con caché: 2 + solo las partidas nuevas (normalmente 0-3).
-- Con la dev key (100 / 2 min) entran ~4 primeros syncs cada 2 minutos → **el seed de la demo hay que correrlo de a poco** (el script espera entre cuentas).
+- Primer sync: 1 (summoner) + 1 (league) + 1 (ids) + 30 (partidas) = **33**. La vinculación suma 2 (account + summoner).
+- Re-sync con caché: 3 + solo las partidas nuevas (normalmente 0-3).
+- Con un límite de app de 100 / 2 min entran ~3 primeros syncs cada 2 minutos → **el seed de la demo hay que correrlo de a poco** (el script espera entre cuentas). Si Riot asigna un límite mayor, el limiter lo toma de los headers.
 
 ## Extracción por partida (→ `partidas_jugador`)
 De `info.participants[]`, para el participante con `puuid` = el nuestro:

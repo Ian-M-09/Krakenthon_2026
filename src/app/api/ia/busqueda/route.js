@@ -17,8 +17,9 @@ export async function POST(request) {
 
   try {
     const { filtros, cacheado } = await interpretarBusqueda(texto);
-    const query = aQueryString(filtrosDesdeIA(filtros, body.equipo));
-    return ok({ filtros, query, cacheado });
+    // tz = zona horaria del navegador del reclutador: la franja "noche" es SU noche.
+    const query = aQueryString(filtrosDesdeIA(filtros, { equipo: body.equipo, tz: body.tz, texto }));
+    return ok({ filtros, query, cacheado, no_entendido: filtros.texto_libre_no_entendido || null });
   } catch (err) {
     if (err instanceof IAError) {
       // La búsqueda manual sigue andando: la UI muestra este aviso y deja los filtros.

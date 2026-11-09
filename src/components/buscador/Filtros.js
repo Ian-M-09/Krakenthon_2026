@@ -13,6 +13,15 @@ export default function Filtros({ filtros, equipos }) {
   return (
     <Card as="form" action="/jugadores" className="space-y-3">
       <h2 className="font-semibold">Filtros</h2>
+      {/* La franja horaria viene de la búsqueda con IA: se conserva al cambiar los demás filtros. */}
+      {filtros.franja && (
+        <>
+          <input type="hidden" name="desde" value={filtros.franja.desde} />
+          <input type="hidden" name="hasta" value={filtros.franja.hasta} />
+          {filtros.franja.dias.length > 0 && <input type="hidden" name="dias" value={filtros.franja.dias.join(",")} />}
+          <input type="hidden" name="tz" value={filtros.tz} />
+        </>
+      )}
       {equipos.length > 0 && (
         <Select
           label="Compatibilidad con"

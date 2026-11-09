@@ -3,7 +3,7 @@
 ## Checklist del 9/11
 - [ ] Repo público en GitHub, con la rama `main` limpia y el tag `v0.1.0-entrega`.
 - [ ] Deploy en Vercel funcionando desde una ventana de incógnito.
-- [ ] Key de Riot vigente en Vercel (si es dev key, renovada ese día).
+- [ ] Clave de producción de Riot cargada en Vercel (es la misma que la de `.env.local`: si no coinciden, los `puuid` no sirven).
 - [ ] Cuentas de demo con el caché precalentado y los informes IA ya generados.
 - [ ] `npm run build` y `npm run lint` sin errores.
 - [ ] Sin secretos en el repo (`git log -p | grep -i "key"` para revisar) y `.env.local` en `.gitignore`.

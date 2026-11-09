@@ -67,6 +67,14 @@ function limpiar(nodo) {
   }
   return nodo;
 }
+// Recorta un texto a `max` caracteres sin cortar palabras ("…" al final). No-string → igual.
+export function recortar(texto, max) {
+  if (typeof texto !== "string" || texto.length <= max) return texto;
+  const corte = texto.slice(0, max - 1);
+  const espacio = corte.lastIndexOf(" ");
+  return `${(espacio > max * 0.6 ? corte.slice(0, espacio) : corte).trimEnd()}…`;
+}
+
 const aJsonSchema = (zodSchema) => limpiar(z.toJSONSchema(zodSchema, { target: "draft-7" }));
 
 // Convierte un error que no se reintenta en un IAError con mensaje amigable.
@@ -85,8 +93,10 @@ function errorFinal(err) {
  * Prueba GEMINI_MODEL y, ante 503/429/404, reintenta 1 vez (1 s) y pasa al siguiente fallback.
  * Devuelve { datos, modelo } (el modelo que respondió) o tira IAError con un código tipado.
  * `mock`: función que devuelve un ejemplo válido; se usa en lugar de Gemini si GEMINI_MOCK=true.
+ * `preparar`: ajusta la respuesta antes de validarla (ej. recortar textos largos), para no tirar
+ * un informe entero porque un campo se pasó de largo.
  */
-export async function generateJSON({ system, prompt, schema, mock, temperature = 0.4, timeoutMs = TIMEOUT_MS }) {
+export async function generateJSON({ system, prompt, schema, mock, preparar, temperature = 0.4, timeoutMs = TIMEOUT_MS }) {
   if (esModoMock()) {
     if (!mock) throw new Error("generateJSON: falta el `mock` para GEMINI_MOCK=true");
     // Se valida igual que una respuesta real: si el ejemplo se rompe, nos enteramos en desarrollo.
@@ -146,6 +156,7 @@ export async function generateJSON({ system, prompt, schema, mock, temperature =
     console.error(`[ia] ${modelo} no devolvió JSON`);
     throw new IAError("IA_INVALID", "La respuesta no es JSON");
   }
+  if (preparar) datos = preparar(datos);
   const validado = schema.safeParse(datos);
   if (!validado.success) {
     console.error(`[ia] Respuesta de ${modelo} fuera del schema`, validado.error.issues.slice(0, 3));
